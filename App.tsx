@@ -1,88 +1,94 @@
+/* eslint-disable prettier/prettier */
 /**
  * My Super great Calculator app
  */
 
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TextInput, View,Image } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
 
 function App(): JSX.Element {
+
+  enum Color {
+    RED = 'red',
+    GREEN = 'green',
+  }
   const [leftOperand, setLeftOperand] = useState('');
   const [rightOperand, setRightOperand] = useState('');
+  const [isConnected, setConnected] = useState(true);
 
-  const [leftOperandInputColor, setLeftOperandInputColor] = useState();
-  const [rightOperandInputColor, setRightOperandInputColor] = useState();
+  const leftOperandInputColor = leftOperand === '' ? Color.RED : Color.GREEN;
+  const rightOperandInputColor = rightOperand === '' ? Color.RED : Color.GREEN;
+
+  const result = parseFloat(leftOperand) + parseFloat(rightOperand);
+
+
+	useEffect(() => {
+		const unsubscribe = NetInfo.addEventListener((state) => {
+			setConnected(!!state.isConnected);
+		});
+
+		return () => {
+			unsubscribe();
+		};
+	}, []);
+
+  const commonStyle  = {
+    borderWidth: 2,
+      fontSize: 30,
+      margin: 10,
+      padding: 10,
+      borderRadius: 4,
+      backgroundColor: '#f1f5ed',
+  }
+
+  const inputStyle = {
+    leftOperand: {
+      ...commonStyle,
+      borderColor: leftOperandInputColor,
+    },
+    rightOperand: {
+      borderColor: rightOperandInputColor,
+      ...commonStyle,
+    },
+  };
+
 
   const changeLeftOperand = (value: any) => {
     setLeftOperand(value);
   };
 
-  useEffect(() => {
-    setLeftOperandInputColor('green');
-    setRightOperandInputColor('green');
-  }, []);
-
-  useEffect(() => {
-    if (leftOperand === '') {
-      setLeftOperandInputColor('red');
-    } else {
-      setLeftOperandInputColor('green');
-    }
-  }, [leftOperand]);
-
   const changeRightOperand = (value: any) => {
-    if (value === '') {
-      setRightOperandInputColor('red');
-    } else {
-      setRightOperandInputColor('green');
-    }
     setRightOperand(value);
   };
 
-  useEffect(() => {
-    if (rightOperand === '') {
-      setRightOperandInputColor('red');
-    } else {
-      setRightOperandInputColor('green');
-    }
-  }, [rightOperand]);
-
   return (
     <SafeAreaView style={styles.body}>
+      <View style={styles.iconView}>
+         <Image  style={styles.icon} source={!isConnected?require('./assets/offline.png'):require('./assets/online.png')} />
+         <Text style={styles.networkStatusMsg}>{!isConnected?"OFFLINE":"ONLINE"}</Text>
+      </View>
+      
+    
       <Text style={styles.header}>
         Hinfact<Text style={styles.bold}>Calc</Text>
       </Text>
       <View style={styles.operation}>
         <TextInput
           value={leftOperand}
-          style={{
-            borderWidth: 2,
-            borderColor: leftOperandInputColor,
-            fontSize: 30,
-            margin: 10,
-            padding: 10,
-            borderRadius: 4,
-            backgroundColor: '#f1f5ed',
-          }}
-          onChangeText={value => changeLeftOperand(value)}
+          style={inputStyle.leftOperand}
+          onChangeText={(value) => changeLeftOperand(value)}
         />
         <Text style={styles.operationText}>+</Text>
         <TextInput
           value={rightOperand}
-          style={{
-            borderWidth: 2,
-            borderColor: rightOperandInputColor,
-            fontSize: 30,
-            margin: 10,
-            padding: 10,
-            borderRadius: 4,
-            backgroundColor: '#f1f5ed',
-          }}
-          onChangeText={value => changeRightOperand(value)}
+          style={inputStyle.rightOperand}
+          onChangeText={(value) => changeRightOperand(value)}
         />
         <Text style={styles.operationText}>=</Text>
       </View>
       <View>
-        <Text style={styles.result}>#result</Text>
+        <Text style={styles.result}>#result: {result || 0}</Text>
       </View>
     </SafeAreaView>
   );
@@ -95,6 +101,7 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 50,
     marginBottom: 34,
+    textAlign: 'center'
   },
   bold: {
     fontWeight: 'bold',
@@ -104,6 +111,8 @@ const styles = StyleSheet.create({
     fontSize: 28,
     alignItems: 'center',
     marginBottom: 36,
+    display: 'flex',
+    justifyContent: 'center',
   },
   operationText: {
     fontSize: 30,
@@ -111,7 +120,21 @@ const styles = StyleSheet.create({
   result: {
     fontSize: 40,
     fontWeight: 'bold',
+    textAlign: 'center'
   },
+  icon: {
+    width: 40,
+    height: 40,
+  },
+  iconView: {
+    display:'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  networkStatusMsg: {
+    fontSize:8,
+  }
 });
 
 export default App;

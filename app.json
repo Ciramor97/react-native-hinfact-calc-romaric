@@ -1,4 +1,5 @@
 {
   "name": "TestTech",
-  "displayName": "TestTech"
+  "displayName": "TestTech",
+  "icon": "./icon.png"
 }
